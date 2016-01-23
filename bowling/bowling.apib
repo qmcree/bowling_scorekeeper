@@ -1,0 +1,137 @@
+FORMAT: 1A
+HOST: https://api.challenges.dev
+
+# Challenges
+
+# Group Bowling
+
+## Games [/v1/bowling/games/{gameId}]
+
++ Parameters
+
+  + gameId (required, number)
+
+### Details [GET]
+
++ Response 200 (application/json)
+
+        ```
+        [
+            {
+                "person_id": 1,
+                "frames": [
+                    {
+                        "score": 9,
+                        "plays": [
+                            {
+                                "id": 1,
+                                "pins_hit": 5
+                            },
+                            {
+                                "id": 2,
+                                "pins_hit": 4
+                            },
+                        ]
+                    },
+                    {
+                        "score": 6,
+                        "plays": [
+                            {
+                                "id": 3,
+                                "pins_hit": 5
+                            },
+                            {
+                                "id": 4,
+                                "pins_hit": 4
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+        ```
+
+## Games Collection [/v1/bowling/games]
+
+### Create game [POST]
+
++ Response 201 (application/json)
+
+        ```
+        {
+            "id": 123,
+            "created_at": "2016-01-22 19:18:17"
+        }
+        ```
+
+## Person's Plays Collection [/v1/bowling/games/{gameId}/persons/{personId}/plays]
+
++ Parameters
+
+  + gameId (required, number)
+  + personId (required, number)
+
+### Details [GET]
+
++ Response 200 (application/json)
+
+        ```
+        {
+            "frames": [
+                {
+                    "score": 9,
+                    "plays": [
+                        {
+                            "id": 1,
+                            "pins_hit": 5
+                        },
+                        {
+                            "id": 2,
+                            "pins_hit": 4
+                        },
+                    ]
+                },
+                {
+                    "score": 6,
+                    "plays": [
+                        {
+                            "id": 3,
+                            "pins_hit": 5
+                        },
+                        {
+                            "id": 4,
+                            "pins_hit": 4
+                        }
+                    ]
+                }
+            ]
+        }
+        ```
+
+### Deliver play [POST]
+
++ Request (application/json)
+
+        ```
+        {
+            "pins_hit": 5
+        }
+        ```
+
++ Response 201 (application/json)
+
+        ```
+        {
+            "frames": [
+                {
+                    "score": null,
+                    "plays": [
+                        {
+                            "id": 1,
+                            "pins_hit": 5
+                        }
+                    ]
+                }
+            ]
+        }
+        ```
