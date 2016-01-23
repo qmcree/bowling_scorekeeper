@@ -22,7 +22,7 @@ HOST: https://api.challenges.dev
                 "frames": [
                     {
                         "score": 9,
-                        "plays": [
+                        "deliveries": [
                             {
                                 "id": 1,
                                 "pins_hit": 5
@@ -35,7 +35,7 @@ HOST: https://api.challenges.dev
                     },
                     {
                         "score": 6,
-                        "plays": [
+                        "deliveries": [
                             {
                                 "id": 3,
                                 "pins_hit": 5
@@ -64,7 +64,7 @@ HOST: https://api.challenges.dev
         }
         ```
 
-## Person's Plays Collection [/v1/bowling/games/{gameId}/persons/{personId}/plays]
+## Person's Deliveries Collection [/v1/bowling/games/{gameId}/persons/{personId}/deliveries]
 
 + Parameters
 
@@ -80,7 +80,7 @@ HOST: https://api.challenges.dev
             "frames": [
                 {
                     "score": 9,
-                    "plays": [
+                    "deliveries": [
                         {
                             "id": 1,
                             "pins_hit": 5
@@ -93,7 +93,7 @@ HOST: https://api.challenges.dev
                 },
                 {
                     "score": 6,
-                    "plays": [
+                    "deliveries": [
                         {
                             "id": 3,
                             "pins_hit": 5
@@ -108,7 +108,7 @@ HOST: https://api.challenges.dev
         }
         ```
 
-### Deliver play [POST]
+### Create delivery (throw ball) [POST]
 
 + Request (application/json)
 
@@ -125,7 +125,7 @@ HOST: https://api.challenges.dev
             "frames": [
                 {
                     "score": null,
-                    "plays": [
+                    "deliveries": [
                         {
                             "id": 1,
                             "pins_hit": 5
