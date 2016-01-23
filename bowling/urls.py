@@ -1,6 +1,8 @@
 from django.conf.urls import url
-from . import views
+from .views import GameView, PlayerDeliveriesView
 
 urlpatterns = [
-    url(r'^games$', views.index)
+    url(r'^games$', GameView.as_view()),
+    url(r'^games/(?P<game_id>[0-9]+)/$', GameView.as_view()),
+    url(r'^games/(?P<game_id>[0-9]+)/players/(?P<player_id>[0-9]+)/deliveries/$', PlayerDeliveriesView.as_view()),
 ]

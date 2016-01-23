@@ -1,5 +1,18 @@
 from django.http import JsonResponse
+from django.views.generic import View
 
 
-def index(request):
-    return JsonResponse('test')
+class GameView(View):
+    def get(self, game_id):
+        pass
+
+    def post(self):
+        pass
+
+
+class PlayerDeliveriesView(View):
+    def get(self, game_id, player_id):
+        pass
+
+    def post(self, game_id, player_id):
+        pass
