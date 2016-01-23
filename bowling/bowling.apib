@@ -5,6 +5,19 @@ HOST: https://api.challenges.dev
 
 # Group Bowling
 
+## Games Collection [/v1/bowling/games]
+
+### Create game [POST]
+
++ Response 201 (application/json)
+
+        ```
+        {
+            "id": 123,
+            "created_at": "2016-01-22 19:18:17"
+        }
+        ```
+
 ## Games [/v1/bowling/games/{gameId}]
 
 + Parameters
@@ -49,19 +62,6 @@ HOST: https://api.challenges.dev
                 ]
             }
         ]
-        ```
-
-## Games Collection [/v1/bowling/games]
-
-### Create game [POST]
-
-+ Response 201 (application/json)
-
-        ```
-        {
-            "id": 123,
-            "created_at": "2016-01-22 19:18:17"
-        }
         ```
 
 ## Person's Deliveries Collection [/v1/bowling/games/{gameId}/persons/{personId}/deliveries]
