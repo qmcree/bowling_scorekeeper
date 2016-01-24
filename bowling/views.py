@@ -4,8 +4,8 @@ from .models import Game
 
 
 class GameView(View):
-    def get(self, game_id):
-        game = Game.get(id=game_id)
+    def get(self, *args, **kwargs):
+        game = Game.objects.get(id=kwargs.get('game_id'))
         return JsonResponse(game.frames())
 
     def post(self):

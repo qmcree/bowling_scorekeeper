@@ -32,7 +32,9 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'bowling.apps.BowlingConfig',
+    'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.staticfiles',
 ]
 
 MIDDLEWARE_CLASSES = [
