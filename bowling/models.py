@@ -92,9 +92,6 @@ class Delivery(models.Model):
     pins_hit = models.SmallIntegerField(default=0)  # max_length=10
     created_at = models.DateTimeField()
 
-    #@classmethod
-    #def calculate_scores(self, deliveries):
-
 
 class GameScore(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
