@@ -8,8 +8,10 @@ class GameView(View):
         game = Game.objects.get(id=kwargs.get('game_id'))
         return JsonResponse(game.frames())
 
-    def post(self):
-        pass
+    def post(self, *args, **kwargs):
+        game = Game()
+        game.save()
+        return JsonResponse(dict(id=game.id, created_at=game.created_at))
 
 
 class PlayerDeliveriesView(View):

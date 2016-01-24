@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Game(models.Model):
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def frames(self, player_id=None):
         filters = dict(game=self.id)
@@ -90,7 +90,7 @@ class Delivery(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     frame = models.SmallIntegerField()  # max_length=10
     pins_hit = models.SmallIntegerField(default=0)  # max_length=10
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class GameScore(models.Model):
