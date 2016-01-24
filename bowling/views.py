@@ -4,10 +4,6 @@ from .models import Game
 
 
 class GameView(View):
-    def get(self, *args, **kwargs):
-        game = Game.objects.get(id=kwargs.get('game_id'))
-        return JsonResponse(game.frames())
-
     def post(self, *args, **kwargs):
         game = Game()
         game.save()
@@ -15,8 +11,9 @@ class GameView(View):
 
 
 class PlayerDeliveriesView(View):
-    def get(self, game_id, player_id):
-        pass
+    def get(self, *args, **kwargs):
+        game = Game.objects.get(id=kwargs['game_id'])
+        return JsonResponse(game.frames(kwargs.get('player_id')))  # @todo confirm player existence if is not None
 
-    def post(self, game_id, player_id):
+    def post(self, *args, **kwargs):
         pass
