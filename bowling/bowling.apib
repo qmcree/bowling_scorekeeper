@@ -29,39 +29,32 @@ HOST: https://api.challenges.dev
 + Response 200 (application/json)
 
         ```
-        [
-            {
-                "player_id": 1,
-                "frames": [
+        {
+            "1": {
+                [
                     {
-                        "score": 9,
-                        "deliveries": [
-                            {
-                                "id": 1,
-                                "pins_hit": 5
-                            },
-                            {
-                                "id": 2,
-                                "pins_hit": 4
-                            },
-                        ]
+                        "pins_hit": [5, 4],
+                        "score": 9
                     },
                     {
-                        "score": 6,
-                        "deliveries": [
-                            {
-                                "id": 3,
-                                "pins_hit": 5
-                            },
-                            {
-                                "id": 4,
-                                "pins_hit": 4
-                            }
-                        ]
+                        "pins_hit": [3, 3],
+                        "score": 6
+                    }
+                ]
+            },
+            "2": {
+                [
+                    {
+                        "pins_hit": [1, 1],
+                        "score": 2
+                    },
+                    {
+                        "pins_hit": [0, 1],
+                        "score": 1
                     }
                 ]
             }
-        ]
+        }
         ```
 
 ## Player's Deliveries Collection [/v1/bowling/games/{game_id}/players/{player_id}/deliveries]
@@ -77,34 +70,18 @@ HOST: https://api.challenges.dev
 
         ```
         {
-            "frames": [
-                {
-                    "score": 9,
-                    "deliveries": [
-                        {
-                            "id": 1,
-                            "pins_hit": 5
-                        },
-                        {
-                            "id": 2,
-                            "pins_hit": 4
-                        },
-                    ]
-                },
-                {
-                    "score": 6,
-                    "deliveries": [
-                        {
-                            "id": 3,
-                            "pins_hit": 5
-                        },
-                        {
-                            "id": 4,
-                            "pins_hit": 4
-                        }
-                    ]
-                }
-            ]
+            "1": {
+                [
+                    {
+                        "pins_hit": [5, 4],
+                        "score": 9
+                    },
+                    {
+                        "pins_hit": [3, 3],
+                        "score": 6
+                    }
+                ]
+            }
         }
         ```
 
@@ -122,16 +99,17 @@ HOST: https://api.challenges.dev
 
         ```
         {
-            "frames": [
-                {
-                    "score": null,
-                    "deliveries": [
-                        {
-                            "id": 1,
-                            "pins_hit": 5
-                        }
-                    ]
-                }
-            ]
+            "1": {
+                [
+                    {
+                        "pins_hit": [5, 4],
+                        "score": 9
+                    },
+                    {
+                        "pins_hit": [3, 3],
+                        "score": 6
+                    }
+                ]
+            }
         }
         ```
