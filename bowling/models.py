@@ -105,20 +105,16 @@ def set_frame(sender, **kwargs):
             player_id=instance.player_id
     ).values('frame').order_by('-frame').annotate(count=Count('id'), pins=Sum('pins_hit'))[:1][0]
 
-    if latest.frame < 10:
-        if latest.num is 2 or latest.sum is 10:
-            instance.frame = latest.frame + 1  # 2 deliveries or strike, next frame
+    if 'frame' not in latest:
+        instance.frame = 1
+    elif latest['frame'] < 10:
+        if latest['count'] is 2 or latest['pins'] is 10:
+            instance.frame = latest['frame'] + 1  # 2 deliveries or strike, next frame
         else:
-            instance.frame = latest.frame
+            instance.frame = latest['frame']
     else:
         # No more than 3 possible, which is only allowed if spare.
-        if (latest.num > 2) or (latest.num is 2 and latest.sum < 10):
+        if (latest['count'] > 2) or (latest['count'] is 2 and latest['pins'] < 10):
             raise ValidationError("Player's game is complete. No more deliveries allowed.")
 
         instance.frame = 10  # can still stay in frame 10
-
-
-class GameScore(models.Model):
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    score = models.SmallIntegerField()  # max_length=300
