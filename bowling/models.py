@@ -71,9 +71,9 @@ class Game(models.Model):
             elif delivery.frame is 10:  # length 3, take care of last frame edge case
                 frame['score'] = frame_sum
 
-        return self.sum_scores(players_frames)
+        return self.__sum_scores(players_frames)
 
-    def sum_scores(self, players_frames):
+    def __sum_scores(self, players_frames):
         # Compound scores
         for player, frames in players_frames.items():
             player_score = 0
@@ -100,21 +100,23 @@ class Delivery(models.Model):
 @receiver(pre_save, sender=Delivery)
 def set_frame(sender, **kwargs):
     instance = kwargs['instance']
-    latest = Delivery.objects.filter(
+    queryset = Delivery.objects.filter(
             game_id=instance.game_id,
             player_id=instance.player_id
-    ).values('frame').order_by('-frame').annotate(count=Count('id'), pins=Sum('pins_hit'))[:1][0]
+    ).values('frame').order_by('-frame').annotate(count=Count('id'), pins=Sum('pins_hit'))[:1]
 
-    if 'frame' not in latest:
-        instance.frame = 1
-    elif latest['frame'] < 10:
-        if latest['count'] is 2 or latest['pins'] is 10:
-            instance.frame = latest['frame'] + 1  # 2 deliveries or strike, next frame
+    try:
+        latest = queryset[0]
+        if latest['frame'] < 10:
+            if latest['count'] is 2 or latest['pins'] is 10:
+                instance.frame = latest['frame'] + 1  # 2 deliveries or strike, next frame
+            else:
+                instance.frame = latest['frame']
         else:
-            instance.frame = latest['frame']
-    else:
-        # No more than 3 possible, which is only allowed if spare.
-        if (latest['count'] > 2) or (latest['count'] is 2 and latest['pins'] < 10):
-            raise ValidationError("Player's game is complete. No more deliveries allowed.")
+            # No more than 3 possible, which is only allowed if spare.
+            if (latest['count'] > 2) or (latest['count'] is 2 and latest['pins'] < 10):
+                raise ValidationError("Player's game is complete. No more deliveries allowed.")
 
-        instance.frame = 10  # can still stay in frame 10
+            instance.frame = 10  # can still stay in frame 10
+    except IndexError or KeyError:
+        instance.frame = 1  # this is the first delivery
