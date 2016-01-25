@@ -1,4 +1,8 @@
 from django.db import models
+from django.db.models import Count, Sum
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+from django.core.validators import ValidationError
 
 
 class Game(models.Model):
@@ -91,6 +95,27 @@ class Delivery(models.Model):
     frame = models.SmallIntegerField()  # max_length=10
     pins_hit = models.SmallIntegerField(default=0)  # max_length=10
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+@receiver(pre_save, sender=Delivery)
+def set_frame(sender, **kwargs):
+    instance = kwargs['instance']
+    latest = Delivery.objects.filter(
+            game_id=instance.game_id,
+            player_id=instance.player_id
+    ).values('frame').order_by('-frame').annotate(count=Count('id'), pins=Sum('pins_hit'))[:1][0]
+
+    if latest.frame < 10:
+        if latest.num is 2 or latest.sum is 10:
+            instance.frame = latest.frame + 1  # 2 deliveries or strike, next frame
+        else:
+            instance.frame = latest.frame
+    else:
+        # No more than 3 possible, which is only allowed if spare.
+        if (latest.num > 2) or (latest.num is 2 and latest.sum < 10):
+            raise ValidationError("Player's game is complete. No more deliveries allowed.")
+
+        instance.frame = 10  # can still stay in frame 10
 
 
 class GameScore(models.Model):
