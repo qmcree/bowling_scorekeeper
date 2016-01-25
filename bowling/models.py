@@ -8,16 +8,14 @@ from django.core.validators import ValidationError
 class Game(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def frames(self, player_id=None):
+    def calculate_scores(self, **kwargs):
         """Calculates the score of one or more players' frames"""
-        filters = dict(game=self.id)
-        if player_id is not None:
-            filters['player'] = player_id
+        deliveries = kwargs.get('deliveries')
 
-        # Get sorted deliveries
-        deliveries = Delivery.objects.filter(**filters).order_by('player', 'frame', 'created_at')
+        if deliveries is None:
+            deliveries = Delivery.sorted(self.id, kwargs.get('player_id'))
 
-        players_frames = dict()
+        players_frames = {}
 
         # Calculate scores for each individual frame
         for delivery in deliveries:
@@ -50,7 +48,7 @@ class Game(models.Model):
                 if last_frame.get('strike') is True:
                     if length is 2:
                         last_frame['score'] = 10 + frame_sum
-                    elif last_last_frame.get('strike') is True:
+                    elif length is 1 and last_last_frame.get('strike') is True:
                         last_last_frame['score'] = 20 + delivery.pins_hit  # Max of 3 strikes to score
 
                 # Score last frame if it was a spare and this is the first delivery
@@ -97,6 +95,15 @@ class Delivery(models.Model):
     pins_hit = models.SmallIntegerField(default=0)  # max_length=10
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @classmethod
+    def sorted(self, game_id=None, player_id=None):
+        """Get sorted deliveries"""
+        filters = dict(game_id=game_id)
+        if player_id is not None:
+            filters['player'] = player_id
+
+        return Delivery.objects.filter(**filters).order_by('player', 'frame', 'created_at')
+
 
 @receiver(pre_save, sender=Delivery)
 def set_frame(sender, **kwargs):
@@ -122,3 +129,12 @@ def set_frame(sender, **kwargs):
             instance.frame = 10  # can still stay in frame 10
     except IndexError or KeyError:
         instance.frame = 1  # this is the first delivery
+
+    if instance.pins_hit > 10:
+        raise ValidationError("Pins hit cannot be over 10")
+
+    frame_sum = Delivery.objects.filter(game_id=instance.game_id, player_id=instance.player_id,
+                                        frame=instance.frame).aggregate(sum=Sum('pins_hit')).get('sum')
+
+    if frame_sum is not None and instance.frame is not 10 and (frame_sum + instance.pins_hit > 10):
+        raise ValidationError("The total number of pins hit for this frame cannot be over 10")

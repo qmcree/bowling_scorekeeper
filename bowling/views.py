@@ -21,7 +21,7 @@ class PlayerDeliveriesView(View):
         """Calculates scores of one or all players' deliveries"""
         try:
             game = Game.objects.get(id=kwargs['game_id'])
-            data = game.frames(kwargs.get('player_id'))
+            data = game.calculate_scores(player_id=kwargs.get('player_id'))
         except IntegrityError:
             data = dict(error=self.integrity_error)
 
@@ -35,7 +35,7 @@ class PlayerDeliveriesView(View):
             delivery.pins_hit = data['pins_hit']
             delivery.save()
 
-            data = delivery.game.frames(kwargs['player_id'])
+            data = delivery.game.calculate_scores(player_id=kwargs['player_id'])
         except KeyError:
             data = dict(error='One or more required parameters are missing.')
         except ValidationError as e:
