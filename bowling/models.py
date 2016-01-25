@@ -9,6 +9,7 @@ class Game(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def frames(self, player_id=None):
+        """Calculates the score of one or more players' frames"""
         filters = dict(game=self.id)
         if player_id is not None:
             filters['player'] = player_id
@@ -68,13 +69,13 @@ class Game(models.Model):
                         frame['spare'] = True
 
                     frame['score'] = 0  # can't score yet
-            elif delivery.frame is 10:  # length 3, take care of last frame edge case
+            elif delivery.frame is 10:  # length 3, take care of tenth frame edge case
                 frame['score'] = frame_sum
 
         return self.__sum_scores(players_frames)
 
     def __sum_scores(self, players_frames):
-        # Compound scores
+        """Calculates and sets the sum of every frame's score."""
         for player, frames in players_frames.items():
             player_score = 0
 
@@ -99,6 +100,7 @@ class Delivery(models.Model):
 
 @receiver(pre_save, sender=Delivery)
 def set_frame(sender, **kwargs):
+    """Validates the delivery and sets the following frame number."""
     instance = kwargs['instance']
     queryset = Delivery.objects.filter(
             game_id=instance.game_id,
