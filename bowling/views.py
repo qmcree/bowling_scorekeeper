@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.views.generic import View
 from django.core.validators import ValidationError
 from django.db.models.query import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
 from .models import Game, Delivery
 import json
 
@@ -15,7 +16,7 @@ class GameView(View):
 
 
 class PlayerDeliveriesView(View):
-    integrity_error = "Not Found"
+    not_found_error = "Not Found"
 
     def get(self, *args, **kwargs):
         """Calculates scores of one or all players' deliveries"""
@@ -23,8 +24,8 @@ class PlayerDeliveriesView(View):
             game = Game.objects.get(id=kwargs['game_id'])
             data = game.calculate_scores(player_id=kwargs.get('player_id'))
             status = 200
-        except IntegrityError:
-            data = dict(error=self.integrity_error)
+        except ObjectDoesNotExist or IntegrityError:
+            data = dict(error=self.not_found_error)
             status = 404
 
         return JsonResponse(data, status=status)
@@ -39,8 +40,8 @@ class PlayerDeliveriesView(View):
 
             data = delivery.game.calculate_scores(player_id=kwargs['player_id'])
             status = 201
-        except IntegrityError:
-            data = dict(error=self.integrity_error)
+        except ObjectDoesNotExist or IntegrityError:
+            data = dict(error=self.not_found_error)
             status = 404
         except KeyError:
             data = dict(error='One or more required parameters are missing.')
