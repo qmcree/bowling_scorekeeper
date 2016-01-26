@@ -11,21 +11,23 @@ class GameView(View):
         """Creates new game"""
         game = Game()
         game.save()
-        return JsonResponse(dict(id=game.id, created_at=game.created_at))
+        return JsonResponse(dict(id=game.id, created_at=game.created_at), status=201)
 
 
 class PlayerDeliveriesView(View):
-    integrity_error = "One or more ID's do not exist."
+    integrity_error = "Not Found"
 
     def get(self, *args, **kwargs):
         """Calculates scores of one or all players' deliveries"""
         try:
             game = Game.objects.get(id=kwargs['game_id'])
             data = game.calculate_scores(player_id=kwargs.get('player_id'))
+            status = 200
         except IntegrityError:
             data = dict(error=self.integrity_error)
+            status = 404
 
-        return JsonResponse(data)
+        return JsonResponse(data, status=status)
 
     def post(self, *args, **kwargs):
         """Creates delivery (a.k.a. ball, throw, roll)"""
@@ -36,11 +38,15 @@ class PlayerDeliveriesView(View):
             delivery.save()
 
             data = delivery.game.calculate_scores(player_id=kwargs['player_id'])
-        except KeyError:
-            data = dict(error='One or more required parameters are missing.')
-        except ValidationError as e:
-            data = dict(error=e.message)
+            status = 201
         except IntegrityError:
             data = dict(error=self.integrity_error)
+            status = 404
+        except KeyError:
+            data = dict(error='One or more required parameters are missing.')
+            status = 422
+        except ValidationError as e:
+            data = dict(error=e.message)
+            status = 422
 
-        return JsonResponse(data)
+        return JsonResponse(data, status=status)

@@ -53,6 +53,8 @@ HOST: https://api.challenges.dev
         }
         ```
 
++ Response 404
+
 ## Game Player's Deliveries Collection [/v1/bowling/games/{game_id}/players/{player_id}/deliveries]
 
 + Parameters
@@ -79,6 +81,8 @@ HOST: https://api.challenges.dev
         }
         ```
 
++ Response 404
+
 ### Create delivery (throw ball) [POST]
 
 + Request (application/json)
@@ -103,5 +107,15 @@ HOST: https://api.challenges.dev
                     "score": 6
                 }
             }
+        }
+        ```
+
++ Response 404
+
++ Response 422 (application/json)
+
+        ```
+        {
+            "error": "One or more required fields are missing."
         }
         ```
