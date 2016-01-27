@@ -103,6 +103,11 @@ class Delivery(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def validate(self, latest_frame=None):
+        """
+        Validates the model.
+        :param latest_frame: dict or None by default
+        :raises ValidationError
+        """
         if self.pins_hit > 10:
             raise ValidationError("Pins hit cannot be over 10")
 
@@ -120,7 +125,7 @@ class Delivery(models.Model):
     @classmethod
     def sorted(cls, game_id=None, player_id=None):
         """
-        Get sorted deliveries
+        Gets sorted deliveries.
         :param game_id: Int defaults to None
         :param player_id: Int defaults to None
         :return: Sorted deliveries
@@ -133,6 +138,10 @@ class Delivery(models.Model):
         return Delivery.objects.filter(**filters).order_by('player', 'frame', 'created_at')
 
     def __get_frame_counts(self):
+        """
+        Retrieves the most recent frame and the sum of pins hit.
+        :rtype QuerySet
+        """
         return Delivery.objects.filter(
                 game_id=self.game_id,
                 player_id=self.player_id
@@ -144,9 +153,8 @@ class Delivery(models.Model):
     def save(self, *args, **kwargs):
         """
         Validates the delivery, sets the following frame number, then saves the model.
-        :param args:
-        :param kwargs:
-        :return:
+        :param args: See superclass
+        :param kwargs: See superclass
         """
         try:
             latest = self.__get_frame_counts()[0]
