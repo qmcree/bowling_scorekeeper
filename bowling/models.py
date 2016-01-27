@@ -1,7 +1,5 @@
 from django.db import models
 from django.db.models import Count, Sum
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 from django.core.validators import ValidationError
 
 
@@ -9,7 +7,11 @@ class Game(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def calculate_scores(self, **kwargs):
-        """Calculates the score of one or more players' frames"""
+        """
+        Calculates scores of each frame for one or all players.
+        :param kwargs: deliveries, player_id
+        :rtype dict
+        """
         deliveries = kwargs.get('deliveries')
 
         if deliveries is None:
@@ -73,7 +75,12 @@ class Game(models.Model):
         return self.__sum_scores(players_frames)
 
     def __sum_scores(self, players_frames):
-        """Calculates and sets the sum of every frame's score."""
+        """
+        Calculates and sets the sum of every frame's score.
+        :param players_frames:
+        :return: Frames with scores summed
+        :rtype dict
+        """
         for player, frames in players_frames.items():
             player_score = 0
 
@@ -91,50 +98,69 @@ class Player(models.Model):
 class Delivery(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    frame = models.SmallIntegerField()  # max_length=10
-    pins_hit = models.SmallIntegerField(default=0)  # max_length=10
+    frame = models.SmallIntegerField()
+    pins_hit = models.SmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def validate(self, latest_frame=None):
+        if self.pins_hit > 10:
+            raise ValidationError("Pins hit cannot be over 10")
+
+        if latest_frame is not None and latest_frame['frame'] is 10:
+            # No more than 3 possible, which is only allowed if spare.
+            if latest_frame['count'] > 2 or (latest_frame['count'] is 2 and latest_frame['pins'] < 10):
+                raise ValidationError("Player's game is complete. No more deliveries allowed.")
+
+            frame_sum = Delivery.objects.filter(game_id=self.game_id, player_id=self.player_id,
+                                                frame=self.frame).aggregate(sum=Sum('pins_hit')).get('sum')
+
+            if frame_sum is not None and self.frame is not 10 and (frame_sum + self.pins_hit > 10):
+                raise ValidationError("The total number of pins hit for this frame cannot be over 10")
+
     @classmethod
-    def sorted(self, game_id=None, player_id=None):
-        """Get sorted deliveries"""
+    def sorted(cls, game_id=None, player_id=None):
+        """
+        Get sorted deliveries
+        :param game_id: Int defaults to None
+        :param player_id: Int defaults to None
+        :return: Sorted deliveries
+        :rtype QuerySet
+        """
         filters = dict(game_id=game_id)
         if player_id is not None:
             filters['player'] = player_id
 
         return Delivery.objects.filter(**filters).order_by('player', 'frame', 'created_at')
 
+    def __get_frame_counts(self):
+        return Delivery.objects.filter(
+                game_id=self.game_id,
+                player_id=self.player_id
+        ).values('frame').order_by('-frame').annotate(
+                count=Count('id'),
+                pins=Sum('pins_hit')
+        )[:1]
 
-@receiver(pre_save, sender=Delivery)
-def set_frame(sender, **kwargs):
-    """Validates the delivery and sets the following frame number."""
-    instance = kwargs['instance']
-    queryset = Delivery.objects.filter(
-            game_id=instance.game_id,
-            player_id=instance.player_id
-    ).values('frame').order_by('-frame').annotate(count=Count('id'), pins=Sum('pins_hit'))[:1]
+    def save(self, *args, **kwargs):
+        """
+        Validates the delivery, sets the following frame number, then saves the model.
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        try:
+            latest = self.__get_frame_counts()[0]
+            self.validate(latest)
 
-    try:
-        latest = queryset[0]
-        if latest['frame'] < 10:
-            if latest['count'] is 2 or latest['pins'] is 10:
-                instance.frame = latest['frame'] + 1  # 2 deliveries or strike, next frame
+            if latest['frame'] < 10:
+                if latest['count'] is 2 or latest['pins'] is 10:
+                    self.frame = latest['frame'] + 1  # 2 deliveries or strike, next frame
+                else:
+                    self.frame = latest['frame']
             else:
-                instance.frame = latest['frame']
-        else:
-            # No more than 3 possible, which is only allowed if spare.
-            if (latest['count'] > 2) or (latest['count'] is 2 and latest['pins'] < 10):
-                raise ValidationError("Player's game is complete. No more deliveries allowed.")
+                self.frame = 10  # can still stay in frame 10
+        except IndexError or KeyError:
+            self.frame = 1  # this is the first delivery
+            self.validate()  # still validate
 
-            instance.frame = 10  # can still stay in frame 10
-    except IndexError or KeyError:
-        instance.frame = 1  # this is the first delivery
-
-    if instance.pins_hit > 10:
-        raise ValidationError("Pins hit cannot be over 10")
-
-    frame_sum = Delivery.objects.filter(game_id=instance.game_id, player_id=instance.player_id,
-                                        frame=instance.frame).aggregate(sum=Sum('pins_hit')).get('sum')
-
-    if frame_sum is not None and instance.frame is not 10 and (frame_sum + instance.pins_hit > 10):
-        raise ValidationError("The total number of pins hit for this frame cannot be over 10")
+        super(Delivery, self).save(*args, **kwargs)

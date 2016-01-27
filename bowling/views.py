@@ -24,7 +24,7 @@ class PlayerDeliveriesView(View):
             game = Game.objects.get(id=kwargs['game_id'])
             data = game.calculate_scores(player_id=kwargs.get('player_id'))
             status = 200
-        except ObjectDoesNotExist or IntegrityError:
+        except ObjectDoesNotExist or IntegrityError:  # could also use `get_object_or_404`
             data = dict(error=self.not_found_error)
             status = 404
 
