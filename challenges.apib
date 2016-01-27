@@ -1,0 +1,121 @@
+FORMAT: 1A
+HOST: https://api.challenges.dev
+
+# Challenges API
+
+# Group Bowling Scorekeeper
+
+## Games Collection [/v1/bowling/games]
+
+### Create game [POST]
+
++ Response 201 (application/json)
+
+        ```
+        {
+            "id": 123,
+            "created_at": "2016-01-22 19:18:17"
+        }
+        ```
+
+## Game Deliveries Collection [/v1/bowling/games/{game_id}/deliveries]
+
++ Parameters
+
+  + game_id (required, number)
+
+### Details [GET]
+
++ Response 200 (application/json)
+
+        ```
+        {
+            "1": {
+                "1": {
+                    "pins_hit": [5, 4],
+                    "score": 9
+                },
+                "2": {
+                    "pins_hit": [3, 3],
+                    "score": 6
+                }
+            },
+            "2": {
+                "1": {
+                    "pins_hit": [5, 4],
+                    "score": 9
+                },
+                "2": {
+                    "pins_hit": [3, 3],
+                    "score": 6
+                }
+            },
+        }
+        ```
+
++ Response 404
+
+## Game Player's Deliveries Collection [/v1/bowling/games/{game_id}/players/{player_id}/deliveries]
+
++ Parameters
+
+  + game_id (required, number)
+  + player_id (required, number)
+
+### Details [GET]
+
++ Response 200 (application/json)
+
+        ```
+        {
+            "1": {
+                "1": {
+                    "pins_hit": [5, 4],
+                    "score": 9
+                },
+                "2": {
+                    "pins_hit": [3, 3],
+                    "score": 6
+                }
+            }
+        }
+        ```
+
++ Response 404
+
+### Create delivery [POST]
+
++ Request (application/json)
+
+        ```
+        {
+            "pins_hit": 5
+        }
+        ```
+
++ Response 201 (application/json)
+
+        ```
+        {
+            "1": {
+                "1": {
+                    "pins_hit": [5, 4],
+                    "score": 9
+                },
+                "2": {
+                    "pins_hit": [3, 3],
+                    "score": 6
+                }
+            }
+        }
+        ```
+
++ Response 404
+
++ Response 422 (application/json)
+
+        ```
+        {
+            "error": "One or more required fields are missing."
+        }
+        ```
